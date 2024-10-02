@@ -11,6 +11,9 @@ app.MapGet("/", () =>
 {
     response.GenerateResponse();
     
+    Console.WriteLine("Running ps execution");
+    TestPs.Exec();
+    
     return response.Response;
 });
 
