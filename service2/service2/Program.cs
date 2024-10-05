@@ -2,19 +2,16 @@ using service2;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
+builder.WebHost.UseUrls("http://*:8200");
 
-var response = new ResponseGenerator();
+var responseGenerator = new ResponseGenerator();
 
 var app = builder.Build();
 
 app.MapGet("/", () =>
 {
-    response.GenerateResponse();
-    
-    Console.WriteLine("Running ps execution");
-    TestPs.Exec();
-    
-    return response.Response;
+    var response = responseGenerator.Response; // Get the JSON response
+    return Results.Json(response); // Return as JSON
 });
 
 app.Run();
