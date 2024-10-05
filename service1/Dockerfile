@@ -2,7 +2,7 @@
 # https://elysiajs.com/patterns/deployment.html#docker
 # Adjustments have been made as necessary to fit the project requirements.
 
-FROM oven/bun AS build
+FROM oven/bun:1 AS build
 
 WORKDIR /app
 
@@ -24,7 +24,15 @@ RUN bun build \
 	--outfile server \
 	./src/index.ts
 
-FROM gcr.io/distroless/base
+FROM debian:bullseye
+
+RUN apt-get update && \
+    apt-get install -y \
+    libc6 \
+    libstdc++6 \
+    procps && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
