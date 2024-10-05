@@ -1,26 +1,48 @@
 ﻿using System.Diagnostics;
-using System.Net;
 
-namespace service2;
-
-public class ResponseGenerator
+namespace service2
 {
-    public string Response => _response;
-    private string _response = "";
-
-    public void GenerateResponse()
+    public class ResponseGenerator
     {
-        string localIp = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault()?.ToString() ?? "N/A";
-        List<string> runningProcesses = Process.GetProcesses().Select(p => p.ProcessName).ToList();
-        double? freeSpace = DriveInfo.GetDrives().FirstOrDefault(d => d.IsReady)?.AvailableFreeSpace;
-        string spaceString = freeSpace.HasValue ? $"{freeSpace / 1024 / 1024 / 1024:F2} GB" : "N/A";
-        
-        string uptime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString();
-        
-        _response = $"Service 2\n" +
-                    $"\tLocal IP: {localIp}\n" +
-                    $"\tRunning processes: {string.Join(", ", runningProcesses)}\n" +
-                    $"\tFree disk space: {spaceString}\n" +
-                    $"\tUptime: {uptime}";
+        public object Response => GenerateResponse();
+
+        private object GenerateResponse()
+        {
+            string localIp = RunCommand("hostname", "-I").Trim();
+            string processListRaw = RunCommand("ps", "-ax");
+            var runningProcesses = processListRaw.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            string diskSpaceRaw = RunCommand("df", "-h");
+            var diskSpace = diskSpaceRaw.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            string uptime = RunCommand("uptime", "-p").Trim();
+
+            var response = new
+            {
+                LocalIP = localIp,
+                RunningProcesses = runningProcesses,
+                DiskSpace = diskSpace,
+                Uptime = uptime
+            };
+
+            return response;
+        }
+
+        private string RunCommand(string command, string args)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = command,
+                Arguments = args,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (Process process = Process.Start(startInfo))
+            {
+                string result = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                return result.Trim();
+            }
+        }
     }
 }
