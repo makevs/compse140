@@ -2,26 +2,52 @@ import os from 'os';
 import { execSync } from 'child_process';
 
 const networkInterfaces = os.networkInterfaces();
+const fetch = require('node-fetch');
 
-function getSystemInfo():string {
-    // Get the IP address of the device
+function getSystemInfo() {
     let ipAddress: string = 'N/A';
 
     if (networkInterfaces.eth0) {
         ipAddress = networkInterfaces.eth0[0].address;
     }
-    // Get the list of running processes
-    const runningProcesses: string = execSync('ps -ax').toString();
-    // Get the available disk space
-    const diskSpace: string = require('os').freemem().toString();
-    // Get the time since last boot
-    const uptime: string = require('os').uptime().toString();
-    // Return the system information
-    return `Service1:\n
-    - ip address: ${ipAddress}\n
-    - list of running processes: ${runningProcesses}\n
-    - available disk space: ${diskSpace}\n
-    - time since last boot: ${uptime}\n`;
+
+    const runningProcesses: string[] = execSync('ps -ax').toString().trim().split('\n');
+    const diskSpace = execSync('df -h').toString().trim().split('\n');
+
+    /* 
+    *  Uptime provides a very minor edgecase where it omits minutes on even hours,
+    *  Service2 runs on a different distro which also shows 0 minutes in the uptime.
+    *  Not a bug, just a difference in distros that the containers use. 
+    * 
+    *  Commands run directly inside containers:
+    *   # uptime -p
+    *     up 3 hours
+    *   
+    *   # uptime -p
+    *     up 3 hours, 0 minutes
+    * */
+    const uptime = execSync('uptime -p').toString().trim();
+
+    return {
+        ipAddress,
+        runningProcesses,
+        diskSpace,
+        uptime,
+    };
 }
 
-export { getSystemInfo };
+async function queryService2(): Promise<object> {
+    try {
+        const response = await fetch('http://service2:8200/');
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching from Service2:", error);
+        return { error: 'Unable to fetch data from Service2' };
+    }
+}
+
+export { getSystemInfo, queryService2 };
