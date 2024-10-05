@@ -42,4 +42,4 @@ ENV NODE_ENV=production
 
 CMD ["./server"]
 
-EXPOSE 3000
+EXPOSE 8199
