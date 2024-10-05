@@ -1,0 +1,13 @@
+-Uptime command ran inside a container seems to use the host machine's bootup time.
+ *this was shown by my PC having an uptime of ~4 hours whereas WSL where I ran my
+  containers was booted up slightly later and displayed roughly 3 hours.
+ *I further reinforced this theory by cloning the repository and building it
+  inside a vm (while simultaneously just testing if the images build fine on a 
+  clean system)
+
+-Distroless was what I first used from the original dockerfile in Service1,
+ it proved to be inefficient for this assignment so I just switched to a more
+ regular distro with package repository to install dependencies (e.g. ps, df and such)
+
+-The DF command results are rather bizarre and it definitely seems to look at what the
+ host machine hardware has available. Pretty interesting, might look into it more.

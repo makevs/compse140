@@ -1,0 +1,6 @@
+I utilised github copilot to write some boilerplate code and help with later refactoring.
+Chatgpt was mainly used to troubleshoot initial issues with Dockerfiles e.g. missing
+dependencies and further consulting with the distro image settings. LLM is still
+in very early phases so it takes a lot of effort to get prompts aligned with the
+expected results. I'm still not very used to the LLMs, so it may not even make progress
+faster over just roaming Stackoverflow for answers (which I normally do). 
